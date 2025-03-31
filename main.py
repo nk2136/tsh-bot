@@ -2,7 +2,7 @@ from flask import Flask, render_template, jsonify
 import os
 import datetime
 from logger import logger
-from config import CHECK_INTERVAL, KEYWORDS
+from config import CHECK_INTERVAL, KEYWORDS, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_IDS
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "linkedin-job-scraper")
@@ -49,6 +49,22 @@ def status():
         "uptime_seconds": (datetime.datetime.now() - app_state["start_time"]).total_seconds(),
         "keywords": KEYWORDS
     })
+
+@app.route('/telegram-setup')
+def telegram_setup():
+    """Display Telegram setup instructions and status"""
+    # Extract bot username from token (if available)
+    bot_username = "tsh_job_alert_bot"  # Default from your earlier message
+    
+    # Get chat IDs as a list
+    chat_ids = []
+    if TELEGRAM_CHAT_IDS and TELEGRAM_CHAT_IDS != ['']:
+        chat_ids = [cid for cid in TELEGRAM_CHAT_IDS if cid]
+    
+    return render_template('telegram_setup.html',
+                          bot_username=bot_username,
+                          telegram_token=TELEGRAM_BOT_TOKEN is not None,
+                          chat_ids=chat_ids)
 
 def update_state(jobs_found=None):
     """Update the application state"""
