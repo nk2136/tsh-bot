@@ -1,10 +1,56 @@
 import requests
 import time
 import os
+import json
 from logger import logger
 from config import TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_IDS
 
-def get_bot_updates():
+# Store the IDs of users who have already received welcome messages
+WELCOMED_USERS_FILE = "welcomed_users.json"
+
+def load_welcomed_users():
+    """Load the list of users who have already received welcome messages"""
+    if not os.path.exists(WELCOMED_USERS_FILE):
+        return set()
+    
+    try:
+        with open(WELCOMED_USERS_FILE, 'r') as f:
+            return set(json.load(f))
+    except Exception as e:
+        logger.error(f"Error loading welcomed users: {e}")
+        return set()
+
+def save_welcomed_users(welcomed_users):
+    """Save the list of users who have already received welcome messages"""
+    try:
+        with open(WELCOMED_USERS_FILE, 'w') as f:
+            json.dump(list(welcomed_users), f)
+    except Exception as e:
+        logger.error(f"Error saving welcomed users: {e}")
+
+def send_welcome_message(chat_id, first_name=None):
+    """Send a welcome message to a new user"""
+    user_name = first_name if first_name else "there"
+    
+    welcome_message = f"""👋 <b>Welcome, {user_name}!</b>
+
+Thank you for connecting with the LinkedIn Job Scraper Bot!
+
+<b>What this bot does:</b>
+• Monitors LinkedIn for new job postings
+• Sends you notifications for remote job opportunities
+• Helps you stay on top of the job market
+
+You're now set up to receive job alerts based on the keywords we're tracking.
+
+<b>Current Keywords:</b> python, javascript, react, remote, qa
+
+If you have any questions or need help, please contact the administrator.
+"""
+    
+    return send_direct_message(chat_id, welcome_message)
+
+def get_bot_updates(send_welcome=False):
     """Get updates from the Telegram bot to see recent chat IDs"""
     if not TELEGRAM_BOT_TOKEN:
         logger.error("TELEGRAM_BOT_TOKEN is not set in environment variables")
@@ -30,6 +76,9 @@ def get_bot_updates():
             print("-" * 40)
             
             seen_chat_ids = set()
+            welcomed_users = load_welcomed_users() if send_welcome else set()
+            new_welcomed_users = set()
+            
             for update in updates.get('result', []):
                 if 'message' in update and 'chat' in update['message']:
                     chat = update['message']['chat']
@@ -40,6 +89,20 @@ def get_bot_updates():
                         first_name = chat.get('first_name', 'N/A')
                         display_name = username if username != 'N/A' else first_name
                         print(f"{chat_id}\t{display_name}")
+                        
+                        # Send welcome message to new users if requested
+                        if send_welcome and str(chat_id) not in welcomed_users:
+                            if '/start' in update['message'].get('text', ''):
+                                print(f"New user detected: {display_name} ({chat_id}). Sending welcome message...")
+                                if send_welcome_message(chat_id, first_name):
+                                    new_welcomed_users.add(str(chat_id))
+                                    print(f"Welcome message sent to {display_name} ({chat_id})")
+            
+            # Save newly welcomed users
+            if send_welcome and new_welcomed_users:
+                welcomed_users.update(new_welcomed_users)
+                save_welcomed_users(welcomed_users)
+                print(f"Sent welcome messages to {len(new_welcomed_users)} new users")
             
             return seen_chat_ids
         else:
@@ -145,11 +208,33 @@ Thank you for using the LinkedIn Job Scraper!
     
     return success_count > 0
 
+def send_welcome_messages_to_new_users():
+    """Check for new users and send them welcome messages"""
+    if not TELEGRAM_BOT_TOKEN:
+        logger.error("TELEGRAM_BOT_TOKEN is not set in environment variables")
+        print("Error: TELEGRAM_BOT_TOKEN not configured.")
+        return False
+    
+    print("\n=== Checking for new users to welcome ===\n")
+    
+    # This will automatically send welcome messages to new users who have sent /start
+    get_bot_updates(send_welcome=True)
+    return True
+
 if __name__ == "__main__":
     print("\n=== LinkedIn Job Scraper - Telegram Test ===\n")
     
     import sys
-    if len(sys.argv) > 1 and sys.argv[1] == "--get-updates":
-        get_bot_updates()
+    if len(sys.argv) > 1:
+        if sys.argv[1] == "--get-updates":
+            get_bot_updates()
+        elif sys.argv[1] == "--welcome":
+            send_welcome_messages_to_new_users()
+        else:
+            print(f"Unknown option: {sys.argv[1]}")
+            print("Available options:")
+            print("  --get-updates    Show recent bot interactions and chat IDs")
+            print("  --welcome        Send welcome messages to new users")
+            print("  (no option)      Send test message to all users")
     else:
         send_test_message()

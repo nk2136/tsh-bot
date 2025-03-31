@@ -30,14 +30,27 @@
                     <code>python send_test_message.py --get-updates</code>
                 </div>
                 
-                <h5 class="mt-4">Step 3: Send test messages</h5>
-                <p>Once chat IDs are properly configured, you can send test messages:</p>
+                <h5 class="mt-4">Step 3: Send welcome messages</h5>
+                <p>New users who start the bot will automatically receive a welcome message. You can manually trigger this process to welcome any new users:</p>
+                <div class="bg-dark p-3 rounded mb-3">
+                    <code>python send_test_message.py --welcome</code>
+                </div>
+                
+                <h5 class="mt-4">Step 4: Send test messages</h5>
+                <p>Once chat IDs are properly configured, you can send test messages to all users:</p>
                 <div class="bg-dark p-3 rounded mb-3">
                     <code>python send_test_message.py</code>
                 </div>
                 
                 <div class="alert alert-info mt-4">
                     <strong>Note:</strong> If users aren't receiving messages, make sure they've initiated a conversation with the bot first.
+                </div>
+                
+                <div class="alert alert-success mt-4">
+                    <h5 class="alert-heading"><i class="bi bi-robot"></i> Automatic Welcome Messages</h5>
+                    <p>New users who start the bot will automatically receive a welcome message!</p>
+                    <hr>
+                    <p class="mb-0">The system checks for new users every 10 minutes and sends personalized welcome messages to anyone who has started the bot.</p>
                 </div>
             </div>
         </div>
