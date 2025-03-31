@@ -11,6 +11,7 @@ class LinkedInScraper:
     
     def __init__(self, job_storage):
         self.job_storage = job_storage
+        self.first_run = True  # Flag to track first run
     
     def _build_search_url(self, keyword):
         """Build LinkedIn job search URL with parameters"""
@@ -59,6 +60,8 @@ class LinkedInScraper:
             
             # Find job listings
             jobs = []
+            marked_job_count = 0
+            
             for job_card in soup.find_all('div', {'class': 'base-card'}):
                 try:
                     # Find job title link
@@ -93,6 +96,12 @@ class LinkedInScraper:
                     
                     # Mark the job as seen
                     self.job_storage.mark_job_seen(job_id)
+                    marked_job_count += 1
+                    
+                    # On first run, we just mark jobs as seen without returning them
+                    # This prevents notifications for existing jobs when the app first starts
+                    if self.first_run:
+                        continue
                     
                     # Add job to results with current timestamp
                     import datetime
@@ -110,8 +119,13 @@ class LinkedInScraper:
                 except Exception as e:
                     logger.error(f"Error parsing job card: {e}")
             
-            logger.info(f"Found {len(jobs)} new {keyword} jobs")
-            return jobs
+            if self.first_run:
+                logger.info(f"First run: Marked {marked_job_count} existing {keyword} jobs as seen (no notifications sent)")
+                # We'll reset first_run flag in the JobChecker after all keywords have been processed
+                return []  # Return empty list on first run
+            else:
+                logger.info(f"Found {len(jobs)} new {keyword} jobs")
+                return jobs
             
         except Exception as e:
             logger.error(f"Error scraping LinkedIn: {e}")

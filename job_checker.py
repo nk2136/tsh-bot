@@ -22,15 +22,23 @@ class JobChecker:
         """Check for new jobs for all keywords"""
         logger.info("Checking for new jobs...")
         all_new_jobs = []
+        first_run = self.linkedin_scraper.first_run
         
         for keyword in KEYWORDS:
             try:
                 jobs = self.linkedin_scraper.get_jobs(keyword)
                 all_new_jobs.extend(jobs)
-                logger.info(f"Found {len(jobs)} new {keyword} jobs")
+                
+                if not first_run:
+                    logger.info(f"Found {len(jobs)} new {keyword} jobs")
             except Exception as e:
                 logger.error(f"Error checking {keyword} jobs: {e}")
         
+        # If this was the first run, reset the flag for future runs
+        if first_run:
+            self.linkedin_scraper.first_run = False
+            logger.info("First run completed - future jobs will trigger notifications")
+            
         # Update the application state with job count and job data
         update_state(len(all_new_jobs), all_new_jobs)
         
