@@ -1,0 +1,7 @@
+run = "gunicorn --bind 0.0.0.0:5000 --reuse-port --reload main:app"
+To deploy your application and make it run permanently, follow these steps:
+1. Click on the 'Run' button at the top of the screen to start the application with gunicorn
+2. In a separate terminal tab, run: python deploy.py
+3. This will start the job checker and keep it running in the background
+4. Click the 'Deploy' button in Replit to get a permanent URL
+5. Set up Uptime Robot to ping your permanent URL + /ping every 5 minutes

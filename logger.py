@@ -1,17 +1,16 @@
 import logging
 import sys
-from config import LOG_LEVEL
 
-# Configure logger
 def setup_logger():
+    """Set up the application logger"""
     logger = logging.getLogger('linkedin_job_scraper')
-    logger.setLevel(LOG_LEVEL)
+    logger.setLevel(logging.INFO)
     
-    # Console handler
+    # Create console handler
     console_handler = logging.StreamHandler(sys.stdout)
-    console_handler.setLevel(LOG_LEVEL)
+    console_handler.setLevel(logging.INFO)
     
-    # Format
+    # Create formatter
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     console_handler.setFormatter(formatter)
     
@@ -20,4 +19,5 @@ def setup_logger():
     
     return logger
 
+# Create and configure logger
 logger = setup_logger()

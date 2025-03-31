@@ -46,6 +46,20 @@ def status():
         "keywords": KEYWORDS
     })
 
+@app.route('/ping')
+def ping():
+    """Simple endpoint for uptime monitoring services to ping"""
+    # Calculate uptime
+    uptime = datetime.datetime.now() - app_state["start_time"]
+    uptime_str = f"{uptime.days} days, {uptime.seconds // 3600} hours, {(uptime.seconds // 60) % 60} minutes"
+    
+    # Update the status with the ping time
+    app_state["last_ping"] = datetime.datetime.now()
+    app_state["ping_count"] = app_state.get("ping_count", 0) + 1
+    
+    # Return a simple response with some basic status info
+    return f"OK - Up for {uptime_str} - Last check: {app_state['last_check'].isoformat() if app_state['last_check'] else 'Never'} - Ping count: {app_state['ping_count']}", 200
+
 @app.route('/api/send-test')
 def send_test():
     """Send a test message to all Telegram users"""
