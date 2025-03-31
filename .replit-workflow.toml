@@ -1,2 +1,4 @@
-[commands.job_scraper]
-command = "python run_bot.py"
+[jobs.bot]
+command = "bash run_persistent.sh"
+persistent = true
+onBoot = true

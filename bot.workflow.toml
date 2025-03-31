@@ -1,0 +1,4 @@
+[bot_service]
+run = "python bot_service.py"
+persistent = true
+onBoot = true

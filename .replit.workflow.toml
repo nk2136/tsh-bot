@@ -1,2 +1,3 @@
-[commands]
-job_scraper = "python run_bot.py"
+[bot]
+run = "python run_bot.py"
+persistent = true
