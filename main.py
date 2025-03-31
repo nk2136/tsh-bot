@@ -40,7 +40,7 @@ def main():
     # Print deployment information
     logger.info("=============================================================")
     logger.info("LinkedIn Job Scraper is running")
-    logger.info("The web interface is available at http://localhost:5000")
+    logger.info("The web interface is available at http://localhost:8080")
     logger.info("The application will continue running in the background")
     logger.info("=============================================================")
     
