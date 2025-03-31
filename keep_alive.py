@@ -97,8 +97,8 @@ def telegram_welcome_checker():
 
 def keep_alive():
     """Start the Flask server in a background thread"""
-    logger.info("Starting keep-alive server on port 5000")
-    t = threading.Thread(target=app.run, kwargs={'host': '0.0.0.0', 'port': 5000, 'debug': False})
+    logger.info("Starting keep-alive server on port 8080")
+    t = threading.Thread(target=app.run, kwargs={'host': '0.0.0.0', 'port': 8080, 'debug': False})
     t.daemon = True  # Set as daemon so it doesn't block program exit
     t.start()
     

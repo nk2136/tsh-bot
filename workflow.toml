@@ -1,0 +1,15 @@
+[commands]
+job_scraper = "python main.py"
+deployer = "python deploy.py"
+
+[web_app]
+command = "job_scraper"
+path = ""
+persistent = true
+network = true
+
+[main_app]
+command = "deployer"
+path = ""
+persistent = true
+network = true

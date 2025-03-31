@@ -1,0 +1,8 @@
+[app]
+run = "python main.py"
+modules = ["python-3.11"]
+deployment = true
+
+[deploy]
+run = "python deploy.py"
+persistent = true
