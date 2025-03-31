@@ -1,70 +1,61 @@
-# LinkedIn Job Scraper
+# LinkedIn Job Scraper Bot
 
-A web scraper that monitors LinkedIn for new job postings based on keywords and sends notifications via Telegram when new jobs are found.
+## Overview
+This application automatically checks LinkedIn for new job postings matching specific keywords and sends notifications via Telegram when new jobs are found.
 
 ## Features
+- Automatically checks LinkedIn for new job postings at regular intervals (every 5 minutes)
+- Sends notifications via Telegram when new jobs are found
+- Web interface to monitor status and configuration
+- Marks jobs as seen to prevent duplicate notifications
 
-- Automatically scrapes LinkedIn for new job listings
-- Sends notifications via Telegram when new jobs are posted
-- Web dashboard for monitoring and configuration
-- Customizable search keywords, location, and filters
-- Statistics and insights into job trends
-- Test message capability to verify Telegram integration
-- Runs continuously with regular job checks every 5 minutes
+## How to Run
+There are several ways to run this application:
 
-## How to Make Your URL Permanent
+### Method 1: Run Directly
+```
+python run_bot.py
+```
+This will start the application in the foreground. The application will continue running as long as your Replit session is active.
 
-By default, Replit development URLs are temporary and will sleep after you leave the workspace. To make your URL permanent and keep the application running:
+### Method 2: Run as Background Process
+```
+nohup python run_bot.py > app.log 2>&1 &
+```
+This starts the application in the background and saves output to app.log.
 
-1. **Deploy your application**:
-   - Click the "Deploy" button in the Replit interface
-   - This will create a permanent URL for your application (e.g., `your-app-name.replit.app`)
-   - Your application will now run continuously
-
-2. **Set up Uptime Robot for additional reliability**:
-   - Create an account at [uptimerobot.com](https://uptimerobot.com)
-   - Add a new monitor with type "HTTP(s)"
-   - Enter your deployed URL + "/ping" as the URL to monitor (e.g., `https://your-app-name.replit.app/ping`)
-   - Set the monitoring interval to 5 minutes
-   - This will ping your application regularly to keep it alive
+### Method 3: Use the deploy.sh Script
+```
+chmod +x deploy.sh
+./deploy.sh
+```
+This script will stop any existing instances of the application and start a new one in the background.
 
 ## Configuration
+The application is configured to search for jobs with the keywords "qa" and "java". 
 
-The application is configured using environment variables:
-
-- `TELEGRAM_BOT_TOKEN`: Token for your Telegram bot (required for notifications)
-- `TELEGRAM_CHAT_IDS`: Comma-separated list of Telegram chat IDs to receive notifications
-- `KEYWORDS`: Comma-separated list of keywords to search for (default: qa,java)
-- `LOCATION`: Location to search for jobs (default: United States)
-- `REMOTE_ONLY`: Whether to only search for remote jobs (default: true)
-- `DAYS_RECENT`: Jobs posted in last X days (default: 1)
-- `CHECK_INTERVAL`: Seconds between job checks (default: 300 - 5 minutes)
+## Telegram Integration
+The application uses a Telegram bot to send notifications. The bot token and chat IDs are configured as environment variables.
 
 ## Web Interface
+The application includes a web interface that shows:
+- Current status
+- Keywords being monitored
+- Recent activity
+- Option to send test messages
 
-The application provides a web interface with:
+Access the web interface at port 5000 when the application is running.
 
-- Status dashboard showing application state and statistics
-- Configuration page for updating search parameters
-- Test message page for verifying Telegram notifications
-- Detailed job view for exploring job listings
+## Files and Structure
+- `run_bot.py`: Main entry point for the application
+- `main.py`: Core application logic
+- `linkedin_scraper.py`: Functions for scraping LinkedIn job postings
+- `telegram_notifier.py`: Functions for sending Telegram notifications
+- `job_storage.py`: Functions for storing and retrieving job information
+- `keep_alive.py`: Web interface and status monitoring
+- `job_checker.py`: Periodic job checking functionality
+- `config.py`: Application configuration
+- `deploy.sh`: Deployment script
 
-## Running Locally
-
-```bash
-python main.py
-```
-
-## Running Permanently (Deployment Mode)
-
-```bash
-python deploy.py
-```
-
-This will start the application in deployment mode, which will:
-1. Set up the necessary data structures
-2. Start the job checking thread
-3. Keep the application running indefinitely
-4. Log instructions for setting up Uptime Robot
-
-Remember to configure Uptime Robot to ping `/ping` every 5 minutes to ensure your application stays alive.
+## Logs
+Check `app.log` for application logs when running in the background.

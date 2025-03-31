@@ -1,15 +1,6 @@
-[commands]
-job_scraper = "python main.py"
-deployer = "python deploy.py"
-
-[web_app]
-command = "job_scraper"
-path = ""
+[job]
+[job.linkedin_bot]
+name = "LinkedIn Job Scraper"
+description = "Automatically checks LinkedIn for new job postings matching keywords and sends Telegram notifications."
+command = ["python", "run_bot.py"]
 persistent = true
-network = true
-
-[main_app]
-command = "deployer"
-path = ""
-persistent = true
-network = true

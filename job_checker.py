@@ -24,36 +24,52 @@ class JobChecker:
         all_new_jobs = []
         first_run = self.linkedin_scraper.first_run
         
-        for keyword in KEYWORDS:
-            try:
-                jobs = self.linkedin_scraper.get_jobs(keyword)
-                all_new_jobs.extend(jobs)
-                
-                if not first_run:
-                    logger.info(f"Found {len(jobs)} new {keyword} jobs")
-            except Exception as e:
-                logger.error(f"Error checking {keyword} jobs: {e}")
-        
-        # If this was the first run, reset the flag for future runs
-        if first_run:
-            self.linkedin_scraper.first_run = False
-            logger.info("First run completed - future jobs will trigger notifications")
+        try:
+            for keyword in KEYWORDS:
+                try:
+                    jobs = self.linkedin_scraper.get_jobs(keyword)
+                    all_new_jobs.extend(jobs)
+                    
+                    if not first_run:
+                        logger.info(f"Found {len(jobs)} new {keyword} jobs")
+                except Exception as e:
+                    logger.error(f"Error checking {keyword} jobs: {e}", exc_info=True)
+                    # Continue with next keyword instead of stopping completely
+                    continue
             
-        # Update the application state with job count and job data
-        update_state(len(all_new_jobs), all_new_jobs)
-        
-        # Send notifications for new jobs
-        notification_count = 0
-        for job in all_new_jobs:
+            # If this was the first run, reset the flag for future runs
+            if first_run:
+                self.linkedin_scraper.first_run = False
+                logger.info("First run completed - future jobs will trigger notifications")
+            
+            # Save all seen jobs to storage after processing all keywords
+            # This prevents duplicate notifications from race conditions
             try:
-                if self.telegram_notifier.send_message(job):
-                    notification_count += 1
-                    logger.info(f"Sent notification for {job['keyword']} job: {job['title']}")
+                self.job_storage._save_seen_jobs()
             except Exception as e:
-                logger.error(f"Error sending notification: {e}")
-        
-        logger.info(f"Sent {notification_count} notifications")
-        return len(all_new_jobs)
+                logger.error(f"Error saving seen jobs: {e}", exc_info=True)
+                
+            # Update the application state with job count and job data
+            update_state(len(all_new_jobs), all_new_jobs)
+            
+            # Send notifications for new jobs
+            notification_count = 0
+            for job in all_new_jobs:
+                try:
+                    if self.telegram_notifier.send_message(job):
+                        notification_count += 1
+                        logger.info(f"Sent notification for {job['keyword']} job: {job['title']}")
+                except Exception as e:
+                    logger.error(f"Error sending notification for job {job.get('title', 'Unknown')}: {e}")
+            
+            logger.info(f"Sent {notification_count} notifications")
+            return len(all_new_jobs)
+            
+        except Exception as e:
+            logger.error(f"Critical error in job checking process: {e}", exc_info=True)
+            # Still update the state to reflect the check was attempted
+            update_state()
+            return 0
     
     def job_check_loop(self):
         """Main loop to periodically check for jobs"""

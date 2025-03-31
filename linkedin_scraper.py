@@ -62,6 +62,9 @@ class LinkedInScraper:
             jobs = []
             marked_job_count = 0
             
+            # Track job IDs we've already processed in this batch to avoid duplicates
+            batch_job_ids = set()
+            
             for job_card in soup.find_all('div', {'class': 'base-card'}):
                 try:
                     # Find job title link
@@ -72,12 +75,25 @@ class LinkedInScraper:
                     job_link = job_link_elem['href'].split('?')[0]  # Remove query parameters
                     job_title = job_link_elem.text.strip()
                     
-                    # Extract job ID from the URL
-                    job_id = job_link.split('/')[-1]
+                    # Extract job ID from the URL - make sure to normalize the ID
+                    job_id = job_link.split('/')[-1].strip()
                     
-                    # Skip if we've seen this job before
-                    if self.job_storage.is_job_seen(job_id):
+                    # Create a unique job signature for this job and keyword
+                    # This prevents the same job from showing up for different keywords
+                    job_signature = f"{job_id}_{keyword}"
+                    
+                    # Skip if we've seen this job before in storage
+                    if self.job_storage.is_job_seen(job_signature):
+                        logger.debug(f"Skipping already seen job: {job_signature}")
                         continue
+                        
+                    # Skip if we've already processed this job ID in this batch
+                    if job_signature in batch_job_ids:
+                        logger.debug(f"Skipping duplicate job ID in current batch: {job_signature}")
+                        continue
+                    
+                    # Add to current batch tracking
+                    batch_job_ids.add(job_signature)
                     
                     # Try to get company name
                     company_elem = job_card.find('span', {'class': 'base-search-card__subtitle'})
@@ -94,8 +110,8 @@ class LinkedInScraper:
                     else:
                         posted_time = "Recently"
                     
-                    # Mark the job as seen
-                    self.job_storage.mark_job_seen(job_id)
+                    # Mark the job as seen using the job signature
+                    self.job_storage.mark_job_seen(job_signature)
                     marked_job_count += 1
                     
                     # On first run, we just mark jobs as seen without returning them
@@ -107,6 +123,7 @@ class LinkedInScraper:
                     import datetime
                     jobs.append({
                         'id': job_id,
+                        'signature': job_signature,
                         'title': job_title,
                         'company': company,
                         'location': location,

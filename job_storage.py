@@ -38,8 +38,10 @@ class JobStorage:
     
     def mark_job_seen(self, job_id):
         """Mark a job as seen"""
-        self.seen_jobs.add(job_id)
-        self._save_seen_jobs()
+        if job_id not in self.seen_jobs:
+            self.seen_jobs.add(job_id)
+            # We'll save at the end of the job check cycle instead of after each job
+            # This reduces file I/O and prevents race conditions
     
     def get_seen_count(self):
         """Return the number of seen jobs"""
