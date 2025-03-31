@@ -6,7 +6,7 @@ TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 TELEGRAM_CHAT_IDS = os.getenv('TELEGRAM_CHAT_IDS', '').split(',')
 
 # Job Search Configuration
-KEYWORDS = os.getenv('KEYWORDS', 'qa,java,python,javascript,remote').split(',')
+KEYWORDS = os.getenv('KEYWORDS', 'qa,java').split(',')
 LOCATION = os.getenv('LOCATION', 'United States')
 REMOTE_ONLY = os.getenv('REMOTE_ONLY', 'true').lower() == 'true'
 DAYS_RECENT = int(os.getenv('DAYS_RECENT', '1'))  # Jobs posted in last X days
