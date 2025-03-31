@@ -1,9 +1,0 @@
-[job_scraper]
-entrypoint = "python3 run_bot.py"
-persistent = true
-run-as = "root"
-
-[webhook]
-entrypoint = "python3 run_bot_service.py"
-persistent = true
-run-as = "root"

@@ -1,34 +1,27 @@
 #!/bin/bash
-# Script to start the LinkedIn Job Scraper Service
+# Script to start the LinkedIn Job Scraper in the background
 
-# Check if the service is already running
-if [ -f app.pid ] && ps -p $(cat app.pid) > /dev/null; then
-    echo "LinkedIn Job Scraper Service is already running."
-    echo "Service Process ID: $(cat app.pid)"
+# Check if the application is already running
+if pgrep -f "python run_bot.py" > /dev/null; then
+    echo "LinkedIn Job Scraper is already running."
+    echo "Process ID: $(pgrep -f 'python run_bot.py')"
     exit 0
 fi
 
-# Clean up any stale PID file
-if [ -f app.pid ]; then
-    rm app.pid
-fi
-
-# Start the service in the background
-echo "Starting LinkedIn Job Scraper Service..."
-nohup python run_bot_service.py > service.log 2>&1 &
+# Start the application in the background
+echo "Starting LinkedIn Job Scraper..."
+nohup python run_bot.py > app.log 2>&1 &
 PID=$!
 
-# Sleep for a moment to ensure the service starts correctly
-sleep 5
+# Sleep for a moment to ensure the process starts correctly
+sleep 2
 
-# Check if the service created a PID file
-if [ -f app.pid ]; then
-    SERVICE_PID=$(cat app.pid)
-    echo "LinkedIn Job Scraper Service started successfully."
-    echo "Service Process ID: $SERVICE_PID"
-    echo "View the web interface at: https://${REPL_SLUG}.${REPL_OWNER}.repl.co:8080"
-    echo "Logs are being saved to: app.log and service.log"
+# Check if the process is still running
+if ps -p $PID > /dev/null; then
+    echo "LinkedIn Job Scraper started successfully."
+    echo "Process ID: $PID"
+    echo "View the web interface at: https://${REPL_SLUG}.${REPL_OWNER}.repl.co"
+    echo "Logs are being saved to: app.log"
 else
-    echo "Warning: Service started but no PID file was created."
-    echo "Check service.log for details."
+    echo "Failed to start LinkedIn Job Scraper. Check app.log for details."
 fi
