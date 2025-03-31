@@ -1,9 +1,11 @@
 # Import the Flask app 
 from keep_alive import app
-from flask import render_template, request, redirect, url_for, flash
+from flask import render_template, request, redirect, url_for, flash, jsonify, abort
 from config import TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_IDS, KEYWORDS, LOCATION, REMOTE_ONLY, DAYS_RECENT
 from logger import logger
+from app_state import app_state
 import os
+import json
 
 @app.route('/telegram-setup')
 def telegram_setup():
@@ -83,6 +85,59 @@ def configure_page():
             flash(f'Error updating configuration: {str(e)}', 'error')
     
     return render_template('configure.html', config=current_config)
+
+@app.route('/dashboard')
+def dashboard():
+    """Display job dashboard with statistics and insights"""
+    # Get job data from app state
+    recent_jobs = app_state["recent_jobs"]
+    keyword_stats = dict(app_state["keyword_stats"])
+    company_stats = dict(app_state["company_stats"])
+    location_stats = dict(app_state["location_stats"])
+    
+    # Sort stats by count in descending order
+    sorted_keyword_stats = sorted(keyword_stats.items(), key=lambda x: x[1], reverse=True)
+    sorted_company_stats = sorted(company_stats.items(), key=lambda x: x[1], reverse=True)[:10]  # Top 10 companies
+    sorted_location_stats = sorted(location_stats.items(), key=lambda x: x[1], reverse=True)[:10]  # Top 10 locations
+    
+    # Import check interval for display
+    from config import CHECK_INTERVAL
+    
+    return render_template('dashboard.html', 
+                           recent_jobs=recent_jobs,
+                           keyword_stats=sorted_keyword_stats,
+                           company_stats=sorted_company_stats,
+                           location_stats=sorted_location_stats,
+                           total_jobs=app_state["jobs_found"],
+                           check_interval=CHECK_INTERVAL)
+
+@app.route('/api/jobs')
+def api_jobs():
+    """Return job data as JSON for API clients"""
+    return jsonify({
+        "recent_jobs": app_state["recent_jobs"],
+        "keyword_stats": dict(app_state["keyword_stats"]),
+        "company_stats": dict(app_state["company_stats"]),
+        "location_stats": dict(app_state["location_stats"]),
+        "total_jobs": app_state["jobs_found"]
+    })
+
+@app.route('/job/<job_id>')
+def job_detail(job_id):
+    """Display detailed information for a specific job"""
+    # Find the job with the specified ID
+    job = None
+    for j in app_state["recent_jobs"]:
+        if j.get('id') == job_id:
+            job = j
+            break
+    
+    if not job:
+        # Job not found
+        flash('Job not found', 'error')
+        return redirect(url_for('dashboard'))
+    
+    return render_template('job_detail.html', job=job)
 
 if __name__ == "__main__":
     # Import the keep_alive function to start the server

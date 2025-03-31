@@ -94,7 +94,8 @@ class LinkedInScraper:
                     # Mark the job as seen
                     self.job_storage.mark_job_seen(job_id)
                     
-                    # Add job to results
+                    # Add job to results with current timestamp
+                    import datetime
                     jobs.append({
                         'id': job_id,
                         'title': job_title,
@@ -102,7 +103,8 @@ class LinkedInScraper:
                         'location': location,
                         'link': job_link,
                         'posted_time': posted_time,
-                        'keyword': keyword
+                        'keyword': keyword,
+                        'timestamp': datetime.datetime.now()
                     })
                     
                 except Exception as e:

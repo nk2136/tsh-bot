@@ -31,8 +31,8 @@ class JobChecker:
             except Exception as e:
                 logger.error(f"Error checking {keyword} jobs: {e}")
         
-        # Update the application state
-        update_state(len(all_new_jobs))
+        # Update the application state with job count and job data
+        update_state(len(all_new_jobs), all_new_jobs)
         
         # Send notifications for new jobs
         notification_count = 0
